@@ -11,7 +11,7 @@ pipeline {
             steps {
                 git branch: 'master',
                     credentialsId: 'f9172797-3192-474d-a03c-bc5a15f2ed32',
-                    url: 'https://github.com/vebhav24/ci-cd-myapp.git'
+                    url: 'https://github.com/vebhav24/cicd.git'
             }
         }
 
