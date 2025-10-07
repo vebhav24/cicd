@@ -23,15 +23,13 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                echo 'Running unit and UI tests...'
-                bat 'mvn test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
+                dir('myapp') {
+                    bat 'mvn test'
                 }
+                // Archive test results for Jenkins UI
+                junit 'myapp/target/surefire-reports/*.xml'
             }
         }
 
