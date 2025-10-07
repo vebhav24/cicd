@@ -9,8 +9,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling latest code from GitHub...'
-                git branch: 'master', url: 'https://github.com/vebhav24/ci-cd-myapp.git'
+                git branch: 'master',
+                    credentialsId: 'f9172797-3192-474d-a03c-bc5a15f2ed32',
+                    url: 'https://github.com/vebhav24/ci-cd-myapp.git'
             }
         }
 
