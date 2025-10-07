@@ -15,10 +15,11 @@ pipeline {
             }
         }
 
-        stage('Build with Maven') {
+        stage('Build') {
             steps {
-                echo 'Building the project...'
-                bat 'mvn clean package -DskipTests'
+                dir('myapp') {       // 👈 change directory to where pom.xml is
+                    bat 'mvn clean package -DskipTests'
+                }
             }
         }
 
