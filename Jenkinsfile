@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Pulling latest code from GitHub...'
-                git branch: 'main', url: 'https://github.com/<your-username>/ci-cd-myapp.git'
+                git branch: 'master', url: 'https://github.com/vebhav24/ci-cd-myapp.git'
             }
         }
 
