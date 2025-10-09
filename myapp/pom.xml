@@ -24,13 +24,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-    <groupId>io.github.bonigarcia</groupId>
-     <artifactId>webdrivermanager</artifactId>
-    <version>5.8.0</version>
-    <scope>test</scope>
-   </dependency>
-
            
     <!-- JUnit -->
     <dependency>
@@ -69,13 +62,18 @@
       </plugin>
 
       <!-- Unit Test -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.5</version>
+				<configuration>
+					<excludes>
+						<exclude>**/UITest.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 
-      <!-- WAR Packaging -->
+			<!-- WAR Packaging -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -83,4 +81,25 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+  <profile>
+    <id>ui-tests</id>
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.2.5</version>
+          <configuration>
+            <includes>
+              <include>**/UITest.java</include>
+            </includes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </build>
+  </profile>
+</profiles>
+
 </project>
