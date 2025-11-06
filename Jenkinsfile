@@ -38,16 +38,16 @@ pipeline {
             }
         }
 
-        stage('Deploy to Tomcat') {
+       stage('Deploy to Tomcat') {
     steps {
         echo '🚀 Deploying WAR to Tomcat server...'
         sshagent (credentials: [env.SSH_CRED]) {
             sh """
-                # Copy WAR file
+                echo "📦 Copying WAR file..."
                 scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
 
-                # Execute remote deployment
-                ssh -tt ${SSH_USER}@${TOMCAT_HOST} << EOF
+                echo "🚀 Running remote deployment..."
+                ssh -o StrictHostKeyChecking=no ${SSH_USER}@${TOMCAT_HOST} '
                     echo "🔍 Checking if Tomcat is running..."
                     TOMCAT_PID=\$(pgrep -f "tomcat")
 
@@ -62,7 +62,7 @@ pipeline {
                     sudo rm -rf /tomcat/apache-tomcat-8.5.58/webapps/*
 
                     echo "📦 Moving new WAR..."
-                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/
+                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ROOT.war
 
                     echo "🔧 Fixing permissions..."
                     sudo chown -R ubuntu:ubuntu /tomcat/apache-tomcat-8.5.58
@@ -73,12 +73,12 @@ pipeline {
                     sudo chmod +x *.sh
                     ./startup.sh
                     echo "✅ Tomcat restarted successfully."
-                    exit
-EOF
+                '
             """
         }
     }
 }
+
 
 
         stage('Verify Deployment') {
