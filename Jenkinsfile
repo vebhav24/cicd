@@ -54,7 +54,7 @@ pipeline {
 
                     if [ ! -z "\$TOMCAT_PID" ]; then
                         echo "🛑 Tomcat is running (PID: \$TOMCAT_PID). Shutting down gracefully..."
-                        cd /tomcat/apache-tomcat-8.5.58/bin
+                        cd /tomcat/apache-tomcat-10.1.48/bin
                         sudo chmod +x shutdown.sh
                         ./shutdown.sh || true
                         sleep 5
@@ -63,17 +63,17 @@ pipeline {
                     fi
 
                     echo "🧹 Cleaning old deployments..."
-                    sudo rm -rf /tomcat/apache-tomcat-8.5.58/webapps/* || true
+                    sudo rm -rf /tomcat/apache-tomcat-10.1.48/webapps/* || true
 
                     echo "📦 Moving new WAR..."
-                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ROOT.war || true
+                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-10.1.48/webapps/ROOT.war || true
 
                     echo "🔧 Fixing permissions..."
-                    sudo chown -R ubuntu:ubuntu /tomcat/apache-tomcat-8.5.58
-                    sudo chmod -R 755 /tomcat/apache-tomcat-8.5.58
+                    sudo chown -R ubuntu:ubuntu /tomcat/apache-tomcat-10.1.48
+                    sudo chmod -R 755 /tomcat/apache-tomcat-10.1.48
 
                     echo "🚀 Starting Tomcat..."
-                    cd /tomcat/apache-tomcat-8.5.58/bin
+                    cd /tomcat/apache-tomcat-10.1.48/bin
                     sudo chmod +x *.sh
                     ./startup.sh || true
 
@@ -87,7 +87,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 echo '🔎 Verifying deployment...'
-                sh 'sleep 10 && curl -I http://35.175.198.186/myapp || true'
+                sh 'sleep 10 && curl -I http://35.175.198.186:8080 || true'
             }
         }
     }
