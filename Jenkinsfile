@@ -39,41 +39,47 @@ pipeline {
         }
 
         stage('Deploy to Tomcat') {
-            steps {
-                echo '🚀 Deploying WAR to Tomcat server...'
-                sshagent (credentials: [env.SSH_CRED]) {
-                    sh """
-                        # Copy WAR file to remote server
-                        scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
+    steps {
+        echo '🚀 Deploying WAR to Tomcat server...'
+        sshagent (credentials: [env.SSH_CRED]) {
+            sh """
+                # Copy WAR file
+                scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
 
-                        # Deploy on Tomcat
-                        ssh ${SSH_USER}@${TOMCAT_HOST} 'bash -s' <<'ENDSSH'
-                            echo "🔍 Checking if Tomcat is already running..."
-                            TOMCAT_PID=\$(pgrep -f "tomcat")
+                # Execute remote deployment
+                ssh -tt ${SSH_USER}@${TOMCAT_HOST} << EOF
+                    echo "🔍 Checking if Tomcat is running..."
+                    TOMCAT_PID=\$(pgrep -f "tomcat")
 
-                            if [ ! -z "\${TOMCAT_PID}" ]; then
-                                echo "🛑 Stopping running Tomcat (PID: \${TOMCAT_PID})..."
-                                sudo kill -9 \${TOMCAT_PID} || true
-                            else
-                                echo "✅ No running Tomcat process found."
-                            fi
+                    if [ ! -z "\$TOMCAT_PID" ]; then
+                        echo "🛑 Stopping Tomcat (PID: \$TOMCAT_PID)..."
+                        sudo kill -9 \$TOMCAT_PID || true
+                    else
+                        echo "✅ No running Tomcat found."
+                    fi
 
-                            echo "🧹 Cleaning old deployments..."
-                            sudo rm -rf /tomcat/apache-tomcat-8.5.58/webapps/*
+                    echo "🧹 Cleaning old deployments..."
+                    sudo rm -rf /tomcat/apache-tomcat-8.5.58/webapps/*
 
-                            echo "📦 Moving new WAR to Tomcat webapps..."
-                            sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/
+                    echo "📦 Moving new WAR..."
+                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/
 
-                            echo "🔧 Starting Tomcat..."
-                            cd /tomcat/apache-tomcat-8.5.58/bin
-                            sudo chmod 777 *.sh
-                            ./startup.sh
-                            echo "✅ Tomcat restarted successfully."
-                        ENDSSH
-                    """
-                }
-            }
+                    echo "🔧 Fixing permissions..."
+                    sudo chown -R ubuntu:ubuntu /tomcat/apache-tomcat-8.5.58
+                    sudo chmod -R 755 /tomcat/apache-tomcat-8.5.58
+
+                    echo "🚀 Starting Tomcat..."
+                    cd /tomcat/apache-tomcat-8.5.58/bin
+                    sudo chmod +x *.sh
+                    ./startup.sh
+                    echo "✅ Tomcat restarted successfully."
+                    exit
+EOF
+            """
         }
+    }
+}
+
 
         stage('Verify Deployment') {
             steps {
