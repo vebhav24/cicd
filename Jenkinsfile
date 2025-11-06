@@ -53,11 +53,13 @@ pipeline {
                     TOMCAT_PID=\$(pgrep -f "tomcat" || true)
 
                     if [ ! -z "\$TOMCAT_PID" ]; then
-                        echo "🛑 Stopping Tomcat (PID: \$TOMCAT_PID)..."
-                        sudo kill -9 \$TOMCAT_PID || true
-                        sleep 2
+                        echo "🛑 Tomcat is running (PID: \$TOMCAT_PID). Shutting down gracefully..."
+                        cd /tomcat/apache-tomcat-8.5.58/bin
+                        sudo chmod +x shutdown.sh
+                        ./shutdown.sh || true
+                        sleep 5
                     else
-                        echo "✅ No running Tomcat found."
+                        echo "✅ Tomcat is not running."
                     fi
 
                     echo "🧹 Cleaning old deployments..."
@@ -82,9 +84,6 @@ pipeline {
         }
     }
 }
-
-
-
         stage('Verify Deployment') {
             steps {
                 echo '🔎 Verifying deployment...'
