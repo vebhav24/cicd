@@ -7,11 +7,12 @@ pipeline {
     }
 
     environment {
-    TOMCAT_HOST = '35.175.198.186'
-    SSH_CRED = 'shame'
-    SSH_USER = 'ubuntu'
-    WAR_NAME = 'myapp.war'
-}
+        TOMCAT_HOST = '35.175.198.186'
+        SSH_CRED = 'shame'     // 👈 Use your actual credential ID
+        SSH_USER = 'ubuntu'
+        WAR_NAME = 'myapp.war'
+        TOMCAT_PATH = '/tomcat/apache-tomcat-8.5.58'
+    }
 
     stages {
         stage('Checkout') {
@@ -22,7 +23,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                dir('myapp') {    // 👈 this ensures we’re inside folder containing pom.xml
+                dir('myapp') {
                     sh 'mvn clean package -DskipTests'
                 }
             }
@@ -36,23 +37,48 @@ pipeline {
                 junit 'myapp/target/surefire-reports/*.xml'
             }
         }
-        
-        stage('Deploy to Tomcat') {
-    steps {
-        echo 'Deploying WAR to Tomcat server...'
-        sshagent (credentials: [env.SSH_CRED]) {
-            sh """
-                scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
-                ssh ${SSH_USER}@${TOMCAT_HOST} "sudo mv /home/${SSH_USER}/${WAR_NAME} /tomcat/apache-tomcat-8.5.58/webapps/ && sudo ./tomcat/apache-tomcat-8.5.58/bin/startup.sh"
-            """
-        }
-    }
-}
 
+        stage('Deploy to Tomcat') {
+            steps {
+                echo '🚀 Deploying WAR to Tomcat server...'
+                sshagent (credentials: [env.SSH_CRED]) {
+                    sh """
+                        # Copy WAR file to remote server
+                        scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
+
+                        # Deploy on Tomcat
+                        ssh ${SSH_USER}@${TOMCAT_HOST} '
+                            echo "🔍 Checking if Tomcat is already running..."
+                            TOMCAT_PID=$(pgrep -f "tomcat")
+
+                            if [ ! -z "$TOMCAT_PID" ]; then
+                                echo "🛑 Stopping running Tomcat (PID: $TOMCAT_PID)..."
+                                sudo kill -9 $TOMCAT_PID || true
+                            else
+                                echo "✅ No running Tomcat process found."
+                            fi
+
+                            echo "🧹 Cleaning old deployments..."
+                            sudo rm -rf ${TOMCAT_PATH}/webapps/*
+
+                            echo "📦 Moving new WAR to Tomcat webapps..."
+                            sudo mv /home/${SSH_USER}/${WAR_NAME} ${TOMCAT_PATH}/webapps/
+
+                            echo "🔧 Starting Tomcat..."
+                            cd ${TOMCAT_PATH}/bin
+                            sudo chmod 777 *.sh
+                            ./startup.sh
+                            echo "✅ Tomcat restarted successfully."
+                        '
+                    """
+                }
+            }
+        }
 
         stage('Verify Deployment') {
             steps {
-                sh 'curl -I http://35.175.198.186:8080/myapp || true'
+                echo '🔎 Verifying deployment...'
+                sh 'sleep 10 && curl -I http://35.175.198.186:8080/myapp || true'
             }
         }
     }
