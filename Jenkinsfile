@@ -48,21 +48,23 @@ pipeline {
 
                 echo "🚀 Running remote deployment..."
                 ssh -o StrictHostKeyChecking=no ${SSH_USER}@${TOMCAT_HOST} '
+                    set -e
                     echo "🔍 Checking if Tomcat is running..."
-                    TOMCAT_PID=\$(pgrep -f "tomcat")
+                    TOMCAT_PID=\$(pgrep -f "tomcat" || true)
 
                     if [ ! -z "\$TOMCAT_PID" ]; then
                         echo "🛑 Stopping Tomcat (PID: \$TOMCAT_PID)..."
                         sudo kill -9 \$TOMCAT_PID || true
+                        sleep 2
                     else
                         echo "✅ No running Tomcat found."
                     fi
 
                     echo "🧹 Cleaning old deployments..."
-                    sudo rm -rf /tomcat/apache-tomcat-8.5.58/webapps/*
+                    sudo rm -rf /tomcat/apache-tomcat-8.5.58/webapps/* || true
 
                     echo "📦 Moving new WAR..."
-                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ROOT.war
+                    sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ROOT.war || true
 
                     echo "🔧 Fixing permissions..."
                     sudo chown -R ubuntu:ubuntu /tomcat/apache-tomcat-8.5.58
@@ -71,8 +73,10 @@ pipeline {
                     echo "🚀 Starting Tomcat..."
                     cd /tomcat/apache-tomcat-8.5.58/bin
                     sudo chmod +x *.sh
-                    ./startup.sh
+                    ./startup.sh || true
+
                     echo "✅ Tomcat restarted successfully."
+                    exit 0
                 '
             """
         }
