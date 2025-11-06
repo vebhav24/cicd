@@ -78,7 +78,7 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 echo '🔎 Verifying deployment...'
-                sh 'sleep 10 && curl -I http://35.175.198.186:8080/myapp || true'
+                sh 'sleep 10 && curl -I http://35.175.198.186/myapp || true'
             }
         }
     }
