@@ -43,26 +43,26 @@ pipeline {
         echo '🚀 Deploying WAR to Tomcat server...'
         sshagent (credentials: [env.SSH_CRED]) {
             sh """
-                echo "📦 Copying WAR file..."
+                echo "Copying WAR file..."
                 scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
 
-                echo "🚀 Running remote deployment..."
+                echo "Running remote deployment..."
                 ssh -o StrictHostKeyChecking=no ${SSH_USER}@${TOMCAT_HOST} '
                     set -e
                     echo "🔍 Checking if Tomcat is running..."
                     TOMCAT_PID=\$(pgrep -f "tomcat" || true)
 
                     if [ ! -z "\$TOMCAT_PID" ]; then
-                        echo "🛑 Tomcat is running (PID: \$TOMCAT_PID). Shutting down gracefully..."
+                        echo "Tomcat is running (PID: \$TOMCAT_PID). Shutting down gracefully..."
                         cd /tomcat/apache-tomcat-10.1.48/bin
                         sudo chmod +x shutdown.sh
                         ./shutdown.sh || true
                         sleep 5
                     else
-                        echo "✅ Tomcat is not running."
+                        echo "Tomcat is not running."
                     fi
 
-                    echo "🧹 Cleaning old deployments..."
+                    echo "Cleaning old deployments..."
                     sudo rm -rf /tomcat/apache-tomcat-10.1.48/webapps/* || true
 
                     echo "📦 Moving new WAR..."
