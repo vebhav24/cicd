@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         TOMCAT_HOST = '35.175.198.186'
-        SSH_CRED = 'tomcat-server'
+        SSH_CRED = 'ssh_tomcat'
         WAR_NAME = 'myapp.war'
     }
 
