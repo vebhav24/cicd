@@ -36,18 +36,7 @@ pipeline {
                 junit 'myapp/target/surefire-reports/*.xml'
             }
         }
-
-        stage('Deploy to Tomcat') {
-    steps {
-        echo 'Deploying WAR to Tomcat server...'
-        sshagent (credentials: ['ssh_tomcat']) {
-            sh '''
-                scp -o StrictHostKeyChecking=no myapp/target/myapp.war ubuntu@35.175.198.186:/home/ubuntu/
-                ssh ubuntu@35.175.198.186 "sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ && sudo systemctl restart tomcat"
-            '''
-        }
-    }
-}
+        
         stage('Deploy to Tomcat') {
     steps {
         echo 'Deploying WAR to Tomcat server...'
