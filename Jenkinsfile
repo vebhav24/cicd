@@ -7,10 +7,11 @@ pipeline {
     }
 
     environment {
-        TOMCAT_HOST = '35.175.198.186'
-        SSH_CRED = 'ssh_tomcat'
-        WAR_NAME = 'myapp.war'
-    }
+    TOMCAT_HOST = '35.175.198.186'
+    SSH_CRED = 'ssh_tomcat'
+    SSH_USER = 'jenkins'
+    WAR_NAME = 'myapp.war'
+}
 
     stages {
         stage('Checkout') {
@@ -42,8 +43,19 @@ pipeline {
         sshagent (credentials: ['ssh_tomcat']) {
             sh '''
                 scp -o StrictHostKeyChecking=no myapp/target/myapp.war ubuntu@35.175.198.186:/home/ubuntu/
-                ssh ubuntu@35.175.198.186 "sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ && sudo systemctl restart tomcat9"
+                ssh ubuntu@35.175.198.186 "sudo mv /home/ubuntu/myapp.war /tomcat/apache-tomcat-8.5.58/webapps/ && sudo systemctl restart tomcat"
             '''
+        }
+    }
+}
+        stage('Deploy to Tomcat') {
+    steps {
+        echo 'Deploying WAR to Tomcat server...'
+        sshagent (credentials: [env.SSH_CRED]) {
+            sh """
+                scp -o StrictHostKeyChecking=no myapp/target/${WAR_NAME} ${SSH_USER}@${TOMCAT_HOST}:/home/${SSH_USER}/
+                ssh ${SSH_USER}@${TOMCAT_HOST} "sudo mv /home/${SSH_USER}/${WAR_NAME} /tomcat/apache-tomcat-8.5.58/webapps/ && sudo ./tomcat/apache-tomcat-8.5.58/bin/startup.sh"
+            """
         }
     }
 }
