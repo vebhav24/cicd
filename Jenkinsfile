@@ -8,8 +8,8 @@ pipeline {
 
     environment {
     TOMCAT_HOST = '35.175.198.186'
-    SSH_CRED = 'ssh_tomcat'
-    SSH_USER = 'ubuntu'
+    SSH_CRED = 'shame'
+    SSH_USER = 'jenkins'
     WAR_NAME = 'myapp.war'
 }
 
