@@ -39,7 +39,7 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 echo 'Deploying WAR to Tomcat server...'
-                sshagent (credentials: ['tomcat-server']) {
+                sshagent (credentials: ['ssh_tomcat']) {
                     sh '''
                         scp -o StrictHostKeyChecking=no myapp/target/myapp.war ubuntu@35.175.198.186:/opt/tomcat/webapps/
                         ssh ubuntu@35.175.198.186 "sudo systemctl restart tomcat9"
