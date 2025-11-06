@@ -9,7 +9,7 @@ pipeline {
     environment {
     TOMCAT_HOST = '35.175.198.186'
     SSH_CRED = 'shame'
-    SSH_USER = 'jenkins'
+    SSH_USER = 'ubuntu'
     WAR_NAME = 'myapp.war'
 }
 
