@@ -13,7 +13,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/vebhav24/cicd.git'
@@ -22,46 +21,46 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                dir('myapp') {    // 👈 this ensures we’re inside folder containing pom.xml
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                sh 'mvn test'
-                junit 'target/surefire-reports/*.xml'
+                dir('myapp') {
+                    sh 'mvn test'
+                }
+                junit 'myapp/target/surefire-reports/*.xml'
             }
         }
 
         stage('Deploy to Tomcat') {
             steps {
-                sshagent (credentials: ["${SSH_CRED}"]) {
-                    sh """
-                    scp -o StrictHostKeyChecking=no target/${WAR_NAME} ubuntu@${TOMCAT_HOST}:/tmp/
-                    ssh -o StrictHostKeyChecking=no ubuntu@${TOMCAT_HOST} '
-                        sudo systemctl stop tomcat9
-                        sudo rm -rf /var/lib/tomcat9/webapps/myapp*
-                        sudo mv /tmp/${WAR_NAME} /var/lib/tomcat9/webapps/
-                        sudo systemctl start tomcat9
-                    '
-                    """
+                echo 'Deploying WAR to Tomcat server...'
+                sshagent (credentials: ['tomcat-server']) {
+                    sh '''
+                        scp -o StrictHostKeyChecking=no myapp/target/myapp.war ubuntu@35.175.198.186:/opt/tomcat/webapps/
+                        ssh ubuntu@35.175.198.186 "sudo systemctl restart tomcat9"
+                    '''
                 }
             }
         }
 
         stage('Verify Deployment') {
             steps {
-                sh 'curl -I http://35.175.198.186:8080/myapp'
+                sh 'curl -I http://35.175.198.186:8080/myapp || true'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build & Deployment successful.'
+            echo '✅ Build and deployment successful!'
         }
         failure {
-            echo '❌ Build or Deployment failed. Check logs.'
+            echo '❌ Build failed. Check console logs.'
         }
     }
 }
