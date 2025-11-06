@@ -11,7 +11,7 @@ pipeline {
         SSH_CRED = 'shame'
         SSH_USER = 'ubuntu'
         WAR_NAME = 'myapp.war'
-        TOMCAT_PATH = '/tomcat/apache-tomcat-8.5.58'
+        TOMCAT_PATH = '/tomcat/apache-tomcat-10.1.48'
     }
 
     stages {
