@@ -16,7 +16,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/vebhav24/ci-cd-myapp.git'
+                git branch: 'main', url: 'https://github.com/vebhav24/cicd.git'
             }
         }
 
