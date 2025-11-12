@@ -2,6 +2,6 @@
   <head><title>MyApp CI/CD Demo</title></head>
   <body>
     <h1>Welcome - This Code is deployed using CICD </h1>
-    <h2>Code Successfully Deployed</h2>
+    <h2>Code Successfully Deployed..</h2>
   </body>
 </html>
